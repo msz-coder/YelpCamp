@@ -6,8 +6,7 @@
   <div class="col-6 offset-3">
     <form
       action="/campgrounds/<%=foundCampground._id%>?_method=PUT"
-      method="post"
-    >
+      method="post" class="needs-validation" novalidate>
       <div class="mb-3">
         <label class="form-label" for="title">Title</label>
         <input
@@ -15,8 +14,10 @@
           type="text"
           id="title"
           name="campground[title]"
-          value="<%=foundCampground.title %>"
+          value="<%=foundCampground.title %>" required
         />
+        <div class="valid-feedback">Looks good!</div>
+        <div class="invalid-feedback">Please choose a title.</div>
       </div>
 
       <div class="mb-3">
@@ -26,8 +27,10 @@
           type="text"
           id="location"
           name="campground[location]"
-          value="<%=foundCampground.location %>"
+          value="<%=foundCampground.location %>" required
         />
+        <div class="valid-feedback">Looks good!</div>
+        <div class="invalid-feedback">Please provide a valid location.</div>
       </div>
 
       <div class="mb-3">
@@ -37,8 +40,10 @@
           type="text"
           id="image"
           name="campground[image]"
-          value="<%=foundCampground.image %>"
+          value="<%=foundCampground.image %>" required
         />
+        <div class="valid-feedback">Looks good!</div>
+        <div class="invalid-feedback">Please provide a valid image url.</div>
       </div>
 
       <div class="mb-3">
@@ -51,14 +56,18 @@
             placeholder="Enter Amount"
             id="price"
             name="campground[price]"
-            value="<%=foundCampground.price %>"
+            value="<%=foundCampground.price %>" required
           />
+          <div class="valid-feedback">Looks good!</div>
+          <div class="invalid-feedback">Please provide a valid amount.</div>
         </div>
       </div>
 
       <div class="mb-3">
         <label for="description" class="form-label">Description</label>
-        <textarea class="form-control" id="description" name="campground[description]" rows="3"><%=foundCampground.description%></textarea>
+        <textarea class="form-control" id="description" name="campground[description]" rows="3" required><%=foundCampground.description%></textarea>
+        <div class="valid-feedback">Looks good!</div>
+        <div class="invalid-feedback">Please provide a short description.</div>
       </div>
 
       <div class="mb-3">

@@ -2,12 +2,7 @@
 <div class="row">
   <h1 class="text-center">New Campground</h1>
   <div class="col-6 offset-3">
-    <form
-      action="/campgrounds"
-      method="post"
-      class="needs-validation"
-      novalidate
-    >
+    <form action="/campgrounds" method="post" class="needs-validation" novalidate>
       <div class="mb-3">
         <label class="form-label" for="title">Title</label>
         <input
@@ -49,17 +44,10 @@
         <label for="price" class="form-label">Campground Price</label>
         <div class="input-group mb-3">
           <span class="input-group-text" id="basic-addon1">$</span>
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Enter Amount"
-            id="price"
-            name="campground[price]"
-            required
-          />
+          <input type="text" class="form-control" placeholder="Enter Amount" id="price" name="campground[price]" required/>
+        </div>
           <div class="valid-feedback">Looks good!</div>
           <div class="invalid-feedback">Please provide a valid amount.</div>
-        </div>
       </div>
 
       <div class="mb-3">

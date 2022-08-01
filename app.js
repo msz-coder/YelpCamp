@@ -3,10 +3,10 @@ const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
 const engine = require("ejs-mate");
+const asyncWrapper = require("./utils/asyncWrapper");
+const Campground = require("./models/campground");
 
 const app = express();
-
-const Campground = require("./models/campground");
 
 main()
   .then(() => {
@@ -45,12 +45,14 @@ app.get("/campgrounds/new", (req, res) => {
 });
 
 //Posting new Campground Details Route
-app.post("/campgrounds", async (req, res) => {
-  const newCampground = new Campground(req.body.campground);
-  console.log(newCampground);
-  await newCampground.save();
-  res.redirect(`/campgrounds/${newCampground._id}`);
-});
+app.post(
+  "/campgrounds",
+  asyncWrapper(async (req, res, next) => {
+    const newCampground = new Campground(req.body.campground);
+    await newCampground.save();
+    res.redirect(`/campgrounds/${newCampground._id}`);
+  })
+);
 //View each Campground Route
 app.get("/campgrounds/:id", async (req, res) => {
   const { id } = req.params;
@@ -82,10 +84,15 @@ app.put("/campgrounds/:id", async (req, res) => {
 });
 
 //Delete Campground Route
-app.delete("/campground/:id", async (req, res) => {
+app.delete("/campgrounds/:id", async (req, res) => {
   const { id } = req.params;
   await Campground.findByIdAndDelete(id);
   res.redirect("/campgrounds");
+});
+
+//Error Handler
+app.use((err, req, res, next) => {
+  res.send("Something went wrong!");
 });
 
 app.listen(3000, () => {

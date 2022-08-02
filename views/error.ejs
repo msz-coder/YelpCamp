@@ -1,0 +1,12 @@
+<% layout("layouts/boilerplate") %> <% block('title').append("Error")%>
+
+<div class="container text-center">
+  <div class="row">
+    <div class="col-6 offset-3">
+      <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Error <%= err.statusCode %></h4>
+        <p><%= err.message %></p>
+      </div>
+    </div>
+  </div>
+</div>

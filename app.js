@@ -5,6 +5,8 @@ const methodOverride = require("method-override");
 const engine = require("ejs-mate");
 const asyncWrapper = require("./utils/asyncWrapper");
 const Campground = require("./models/campground");
+const ExpressError = require("./utils/ExpressError");
+const { campgroundSchema } = require("./campgroundSchema");
 
 const app = express();
 
@@ -17,6 +19,16 @@ main()
 async function main() {
   await mongoose.connect("mongodb://localhost:27017/yelp-camp");
 }
+
+const validateCampground = (req, res, next) => {
+  const { error } = campgroundSchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(msg, 400);
+  } else {
+    next();
+  }
+};
 
 // use ejs-locals for all ejs templates:
 app.engine("ejs", engine);
@@ -34,10 +46,13 @@ app.get("/", (req, res) => {
 });
 
 //View All Campgrounds Route
-app.get("/campgrounds", async (req, res) => {
-  const campgrounds = await Campground.find({});
-  res.render("campgrounds/index", { campgrounds });
-});
+app.get(
+  "/campgrounds",
+  asyncWrapper(async (req, res) => {
+    const campgrounds = await Campground.find({});
+    res.render("campgrounds/index", { campgrounds });
+  })
+);
 
 //Create new Campground Route
 app.get("/campgrounds/new", (req, res) => {
@@ -47,6 +62,7 @@ app.get("/campgrounds/new", (req, res) => {
 //Posting new Campground Details Route
 app.post(
   "/campgrounds",
+  validateCampground,
   asyncWrapper(async (req, res, next) => {
     const newCampground = new Campground(req.body.campground);
     await newCampground.save();
@@ -54,45 +70,64 @@ app.post(
   })
 );
 //View each Campground Route
-app.get("/campgrounds/:id", async (req, res) => {
-  const { id } = req.params;
-  const campground = await Campground.findById(id);
-  console.log(campground);
-  res.render("campgrounds/show", { campground, title: campground.title });
-});
+app.get(
+  "/campgrounds/:id",
+  asyncWrapper(async (req, res) => {
+    const { id } = req.params;
+    const campground = await Campground.findById(id);
+    res.render("campgrounds/show", { campground, title: campground.title });
+  })
+);
 
 //Viewing Edit Campground Route
-app.get("/campgrounds/:id/edit", async (req, res) => {
-  const { id } = req.params;
-  const foundCampground = await Campground.findById(id);
-  res.render("campgrounds/edit", { foundCampground });
-});
+app.get(
+  "/campgrounds/:id/edit",
+  asyncWrapper(async (req, res) => {
+    const { id } = req.params;
+    const foundCampground = await Campground.findById(id);
+    res.render("campgrounds/edit", { foundCampground });
+  })
+);
 
 //Updating Campground Route
-app.put("/campgrounds/:id", async (req, res) => {
-  const { id } = req.params;
-  const updatedContent = req.body.campground;
-  const updatedCampground = await Campground.findByIdAndUpdate(
-    id,
-    updatedContent,
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
-  res.redirect(`/campgrounds/${updatedCampground._id}`);
-});
+app.put(
+  "/campgrounds/:id",
+  validateCampground,
+  asyncWrapper(async (req, res) => {
+    const { id } = req.params;
+    const updatedContent = req.body.campground;
+    const updatedCampground = await Campground.findByIdAndUpdate(
+      id,
+      updatedContent,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    res.redirect(`/campgrounds/${updatedCampground._id}`);
+  })
+);
 
 //Delete Campground Route
-app.delete("/campgrounds/:id", async (req, res) => {
-  const { id } = req.params;
-  await Campground.findByIdAndDelete(id);
-  res.redirect("/campgrounds");
+app.delete(
+  "/campgrounds/:id",
+  asyncWrapper(async (req, res) => {
+    const { id } = req.params;
+    await Campground.findByIdAndDelete(id);
+    res.redirect("/campgrounds");
+  })
+);
+
+//All invalid routes (All request types)
+app.all("*", (req, res, next) => {
+  next(new ExpressError("Page Not Found", 404));
 });
 
 //Error Handler
 app.use((err, req, res, next) => {
-  res.send("Something went wrong!");
+  const { statusCode = 500 } = err;
+  if (!err.message) err.message = "Oh No, Something went wrong";
+  res.status(statusCode).render("error", { err });
 });
 
 app.listen(3000, () => {

@@ -6,10 +6,12 @@ const methodOverride = require("method-override");
 const engine = require("ejs-mate");
 const campgroundRoutes = require("./routes/campgroundRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const userRoutes = require("./routes/userRoutes");
 const ExpressError = require("./utils/ExpressError");
 const flash = require("connect-flash");
-
-const app = express();
+const passport = require("passport");
+const localStrategy = require("passport-local");
+const User = require("./models/user");
 
 main()
   .then(() => {
@@ -21,20 +23,21 @@ async function main() {
   await mongoose.connect("mongodb://localhost:27017/yelp-camp");
 }
 
+const app = express();
+
 // use ejs-locals for all ejs templates:
 app.engine("ejs", engine);
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 //Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
-
 const sessionConfig = {
   secret: "Mypass",
-  resave: true,
+  resave: false,
   saveUninitialized: true,
   cookie: {
     httpOnly: true,
@@ -45,15 +48,28 @@ const sessionConfig = {
 
 app.use(session(sessionConfig));
 app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new localStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 app.use((req, res, next) => {
+  res.locals.currentUser = req.user;
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
   next();
 });
 
+app.use("/", userRoutes);
 app.use("/campgrounds", campgroundRoutes);
 app.use("/campgrounds/:id/reviews", reviewRoutes);
+
+app.get("/fakeUser", async (req, res) => {
+  const user = new User({ email: "lmao@gmail.com", username: "lmao" });
+  const newUser = await User.register(user, "chicken");
+  res.send(newUser);
+});
 
 // Homepage route
 app.get("/", (req, res) => {

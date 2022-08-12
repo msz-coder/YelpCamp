@@ -3,28 +3,23 @@ const router = express.Router({ mergeParams: true });
 const asyncWrapper = require("../utils/asyncWrapper");
 const Campground = require("../models/campground");
 const Review = require("../models/review");
-const { reviewSchema } = require("../schemas");
-const ExpressError = require("../utils/ExpressError");
-
-const validateReview = (req, res, next) => {
-  const { error } = reviewSchema.validate(req.body);
-  if (error) {
-    const msg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(msg, 400);
-  } else {
-    next();
-  }
-};
+const {
+  validateReview,
+  isLoggedIn,
+  isReviewAuthor,
+} = require("../utils/middlewares");
 
 //Leave Review
 router.post(
   "/",
+  isLoggedIn,
   validateReview,
   asyncWrapper(async (req, res) => {
     const { id } = req.params;
     const campground = await Campground.findById(id);
     const review = new Review(req.body.review);
     campground.reviews.push(review);
+    review.author = req.user._id;
     await review.save();
     await campground.save();
     req.flash("success", "Successfully created new review");
@@ -35,6 +30,8 @@ router.post(
 //Delete Review
 router.delete(
   "/:reviewId",
+  isLoggedIn,
+  isReviewAuthor,
   asyncWrapper(async (req, res) => {
     const { id, reviewId } = req.params;
     await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });

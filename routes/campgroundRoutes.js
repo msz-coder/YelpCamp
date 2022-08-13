@@ -1,110 +1,37 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 const asyncWrapper = require("../utils/asyncWrapper");
-const Campground = require("../models/campground");
 const {
   isLoggedIn,
   validateCampground,
   isAuthor,
 } = require("../utils/middlewares");
+const campCRUD = require("../controllers/campground");
 
-//View All Campgrounds Route
-router.get(
-  "/",
-  asyncWrapper(async (req, res) => {
-    const campgrounds = await Campground.find({});
-    res.render("campgrounds/index", { campgrounds });
-  })
-);
+router
+  .route("/")
+  .get(asyncWrapper(campCRUD.viewCampgrounds)) //View All Campgrounds Route
+  .post(isLoggedIn, validateCampground, asyncWrapper(campCRUD.postCampground)); //Posting new Campground Details Route
 
-//Create new Campground Route
-router.get("/new", isLoggedIn, (req, res) => {
-  res.render("campgrounds/new");
-});
+router.get("/new", isLoggedIn, campCRUD.newCampground); //Create new Campground Route
 
-//Posting new Campground Details Route
-router.post(
-  "/",
-  isLoggedIn,
-  validateCampground,
-  asyncWrapper(async (req, res, next) => {
-    const newCampground = new Campground(req.body.campground);
-    newCampground.author = req.user._id;
-    await newCampground.save();
-    req.flash("success", "Successfully created a new Campground");
-    res.redirect(`/campgrounds/${newCampground._id}`);
-  })
-);
-//View each Campground Route
-router.get(
-  "/:id",
-  asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    const campground = await Campground.findById(id)
-      .populate({
-        path: "reviews",
-        populate: {
-          path: "author",
-        },
-      })
-      .populate("author");
-    if (!campground) {
-      req.flash("error", "Sorry, cannot find that campground");
-      return res.redirect("/campgrounds");
-    }
-    res.render("campgrounds/show", { campground, title: campground.title });
-  })
-);
+router
+  .route("/:id")
+  .get(asyncWrapper(campCRUD.viewEachCamp)) //View each Campground Route
+  .put(
+    isLoggedIn,
+    isAuthor,
+    validateCampground,
+    asyncWrapper(campCRUD.updateCamp)
+  ) //Updating Campground Route
+  .delete(isLoggedIn, isAuthor, asyncWrapper(campCRUD.deleteCamp)); //Delete Campground Route
 
 //Viewing Edit Campground Route
 router.get(
   "/:id/edit",
   isLoggedIn,
   isAuthor,
-  asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    const foundCampground = await Campground.findById(id);
-    if (!foundCampground) {
-      req.flash("error", "Sorry, cannot find that campground");
-      return res.redirect("/campgrounds");
-    }
-    res.render("campgrounds/edit", { foundCampground });
-  })
-);
-
-//Updating Campground Route
-router.put(
-  "/:id",
-  isLoggedIn,
-  isAuthor,
-  validateCampground,
-  asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    const updatedContent = req.body.campground;
-    const updatedCampground = await Campground.findByIdAndUpdate(
-      id,
-      updatedContent,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-    req.flash("success", "Successfully updated the Campground");
-    res.redirect(`/campgrounds/${updatedCampground._id}`);
-  })
-);
-
-//Delete Campground Route
-router.delete(
-  "/:id",
-  isLoggedIn,
-  isAuthor,
-  asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    await Campground.findByIdAndDelete(id);
-    req.flash("success", "Successfully deleted the Campground");
-    res.redirect("/campgrounds");
-  })
+  asyncWrapper(campCRUD.getEditCampground)
 );
 
 module.exports = router;

@@ -22,4 +22,6 @@ router
   .post(loginConfig, userCRUD.userLogin)
   .get(userCRUD.userLogout);
 
+router.get("/logout", userCRUD.userLogout);
+
 module.exports = router;

@@ -1,8 +1,15 @@
 <% layout("layouts/boilerplate") %> <% block('title').append('New Campground')%>
+<link rel="stylesheet" href="/css/images.css" />
 <div class="row">
   <h1 class="text-center">New Campground</h1>
   <div class="col-6 offset-3">
-    <form action="/campgrounds" method="post" class="needs-validation" novalidate>
+    <form
+      action="/campgrounds"
+      method="post"
+      class="needs-validation"
+      novalidate
+      enctype="multipart/form-data"
+    >
       <div class="mb-3">
         <label class="form-label" for="title">Title</label>
         <input
@@ -28,26 +35,20 @@
         <div class="invalid-feedback">Please provide a valid location.</div>
       </div>
       <div class="mb-3">
-        <label class="form-label" for="image">Image Url</label>
-        <input
-          class="form-control"
-          type="text"
-          id="image"
-          name="campground[image]"
-          required
-        />
-        <div class="valid-feedback">Looks good!</div>
-        <div class="invalid-feedback">Please provide a valid image url.</div>
-      </div>
-
-      <div class="mb-3">
         <label for="price" class="form-label">Campground Price</label>
         <div class="input-group mb-3">
           <span class="input-group-text" id="basic-addon1">$</span>
-          <input type="text" class="form-control" placeholder="Enter Amount" id="price" name="campground[price]" required/>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Enter Amount"
+            id="price"
+            name="campground[price]"
+            required
+          />
         </div>
-          <div class="valid-feedback">Looks good!</div>
-          <div class="invalid-feedback">Please provide a valid amount.</div>
+        <div class="valid-feedback">Looks good!</div>
+        <div class="invalid-feedback">Please provide a valid amount.</div>
       </div>
 
       <div class="mb-3">
@@ -62,6 +63,23 @@
         <div class="valid-feedback">Looks good!</div>
         <div class="invalid-feedback">Please provide a short description.</div>
       </div>
+
+      <div class="mb-3">
+        <label class="form-label">Choose Image(s)</label>
+        <div class="form-file custom-file">
+          <input
+            class="form-control custom-file-input"
+            type="file"
+            id="image"
+            name="image"
+            multiple
+            onchange="newFileUpload(event)"
+          />
+          <label for="image" class="form-label custom-file-label"></label>
+        </div>
+      </div>
+
+      <div id="uploadUI" class="row row-cols-1 row-cols-md-3 g-4 mb-3"></div>
 
       <div class="mb-3">
         <button class="btn btn-success">Add Campground</button>

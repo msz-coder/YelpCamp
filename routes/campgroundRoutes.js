@@ -7,11 +7,19 @@ const {
   isAuthor,
 } = require("../utils/middlewares");
 const campCRUD = require("../controllers/campground");
+const multer = require("multer");
+const { storage } = require("../cloudinary");
+const upload = multer({ storage });
 
 router
   .route("/")
   .get(asyncWrapper(campCRUD.viewCampgrounds)) //View All Campgrounds Route
-  .post(isLoggedIn, validateCampground, asyncWrapper(campCRUD.postCampground)); //Posting new Campground Details Route
+  .post(
+    isLoggedIn,
+    upload.array("image"),
+    validateCampground,
+    asyncWrapper(campCRUD.postCampground)
+  ); //Posting new Campground Details Route
 
 router.get("/new", isLoggedIn, campCRUD.newCampground); //Create new Campground Route
 
@@ -21,6 +29,7 @@ router
   .put(
     isLoggedIn,
     isAuthor,
+    upload.array("image"),
     validateCampground,
     asyncWrapper(campCRUD.updateCamp)
   ) //Updating Campground Route

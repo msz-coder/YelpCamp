@@ -1,12 +1,14 @@
 <% layout("layouts/boilerplate") %> 
 <% block('title').append("Edit Campground")%>
+<link rel="stylesheet" href="/css/images.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+
 
 <div class="row">
   <h1 class="text-center">Edit Campground: <%=foundCampground.title %></h1>
   <div class="col-6 offset-3">
-    <form
-      action="/campgrounds/<%=foundCampground._id%>?_method=PUT"
-      method="post" class="needs-validation" novalidate>
+    <form action="/campgrounds/<%=foundCampground._id%>?_method=PUT"
+      method="POST" class="needs-validation" id="editForm" novalidate enctype="multipart/form-data">
       <div class="mb-3">
         <label class="form-label" for="title">Title</label>
         <input
@@ -34,19 +36,6 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label" for="image">Image Url</label>
-        <input
-          class="form-control"
-          type="text"
-          id="image"
-          name="campground[image]"
-          value="<%=foundCampground.image %>" required
-        />
-        <div class="valid-feedback">Looks good!</div>
-        <div class="invalid-feedback">Please provide a valid image url.</div>
-      </div>
-
-      <div class="mb-3">
         <label for="price" class="form-label">Campground Price</label>
         <div class="input-group mb-3">
           <span class="input-group-text" id="basic-addon1">$</span>
@@ -70,9 +59,45 @@
         <div class="invalid-feedback">Please provide a short description.</div>
       </div>
 
+      <% if(foundCampground.images.length > 0){ %> 
+        <div class="card text-bg-light border-dark mb-3">
+          <div class="card-header">Selected file(s) <%= foundCampground.images.length %> </div>
+        <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
+          <% foundCampground.images.forEach((img, i) => { %> 
+            <div class="col">
+              <div class="card m-1">
+                <div class="position-relative">
+                  <img src="<%= img.url %>" title="<%= img.originalname %>" class="card-img-top" style="z-index: 0;">
+                  <i class="bi bi-<%=i+1%>-square-fill position-absolute top-0 start-0" style="font-size: 1.5rem; z-index: 1; padding-left: 0.1rem;"></i>
+                  <a class="position-absolute top-0 end-0 btn btn-link">
+                    <i class="bi bi-trash" style="font-size: 1.5rem; color:black; z-index: 1;" onclick="toCheckbox(this)"></i>
+                    <input id="image-<%= i %>" name="deleteImages[]" class="form-check-input mt-0" type="checkbox" value="<%= img.filename %>" style="display:none;" onchange="toDelete(this)">
+                  </a>
+                </div>
+                <small class="text-muted mb-0"><%= img.originalname %></small>
+              </div>
+            </div>
+          <% }) %> 
+        </div>
+      </div>
+      <% } %> 
+
+      <div class="card text-bg-dark border-light mb-3">
+        <div class="card-header"> <p class="fw-bold mb-2">New File(s) Selection...</p>
+          <div class="form-file custom-file">
+            <input type="text" id="getCamp" style="display: none" value="<%-imgArr%>">
+            <input class="form-control custom-file-input" type="file" id="image" name="image" multiple onchange="localFilesHandler()">
+            <label for="image" class="form-label custom-file-label"></label>
+          </div> 
+        </div>
+        <div id="newSelection" class="row row-cols-1 row-cols-md-3 g-4 mb-3"></div>
+      </div>
+      
+
       <div class="mb-3">
         <button class="btn btn-success">Update Campground</button>
         <a class="btn btn-primary" href="/campgrounds/<%=foundCampground._id%>">Back To Campground</a>
       </div>
     </form>
   </div>
+</div>

@@ -59,11 +59,11 @@
         <div class="invalid-feedback">Please provide a short description.</div>
       </div>
 
-      <% if(foundCampground.images.length > 0){ %> 
+      <% if(foundCampground.cloudinaryImages.length > 0){ %> 
         <div class="card text-bg-light border-dark mb-3">
-          <div class="card-header">Selected file(s) <%= foundCampground.images.length %> </div>
+          <div class="card-header">Selected file(s) <%= foundCampground.cloudinaryImages.length %> </div>
         <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
-          <% foundCampground.images.forEach((img, i) => { %> 
+          <% foundCampground.cloudinaryImages.forEach((img, i) => { %> 
             <div class="col">
               <div class="card m-1">
                 <div class="position-relative">
@@ -85,7 +85,6 @@
       <div class="card text-bg-dark border-light mb-3">
         <div class="card-header"> <p class="fw-bold mb-2">New File(s) Selection...</p>
           <div class="form-file custom-file">
-            <input type="text" id="getCamp" style="display: none" value="<%-imgArr%>">
             <input class="form-control custom-file-input" type="file" id="image" name="image" multiple onchange="localFilesHandler()">
             <label for="image" class="form-label custom-file-label"></label>
           </div> 
@@ -101,3 +100,8 @@
     </form>
   </div>
 </div>
+<input type="text" id="getCamp" style="display: none" value="<%-imgArr%>">
+<script>
+  const campNames = <%- JSON.stringify(foundCampground.cloudinaryImages) %>;
+</script>
+<script src="/js/deleteHandler.js"></script>

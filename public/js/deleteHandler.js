@@ -4,14 +4,14 @@ const imgSelector = document.querySelector("#imgSelector");
 const selectedFiles = [];
 
 function localFilesHandler() {
-  const camp = document.querySelector("#getCamp").value;
-  const campArr = camp.split(",");
   let files = input.files;
+  const cloudinaryImages = campNames.map((img) => img.originalname);
   for (let i = 0; i < files.length; i++) {
     if (selectedFiles.every((e) => e.name !== files[i].name)) {
       selectedFiles.push(files[i]);
     }
   }
+  console.log(selectedFiles);
   showImages();
 }
 
